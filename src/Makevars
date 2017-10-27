@@ -1,0 +1,2 @@
+# Linking to the FLasher package
+PKG_LIBS = `$(R_HOME)/bin/Rscript -e "FLasher:::FLasherLib()"` 

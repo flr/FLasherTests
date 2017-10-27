@@ -1,0 +1,14 @@
+Package: FLasherTests
+Type: Package
+Title: Provides tests for the internal C++ functions and methods in FLasher
+Version: 1.0
+Date: 2017-10-19
+Author: Finlay Scott
+Maintainer: Finlay Scott <finlay.scott@ec.europa.eu>
+Description: Provides tests for the internal C++ functions and methods in FLasher. Not really for public use.
+License: EUPL
+Depends: FLasher(>= 0.0.3),
+Imports: Rcpp (>= 0.12.13)
+LinkingTo: Rcpp, FLasher
+SystemRequirements: C++11
+Suggests: testthat,
