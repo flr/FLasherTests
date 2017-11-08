@@ -3,32 +3,26 @@
 \alias{FLasherTests}
 \docType{package}
 \title{
-  A short title line describing what the package does
+    Tests internal C++ code of FLasher.
 }
 \description{
-  A more detailed description of what the package does. A length
-  of about one to five lines is recommended.
+    Probably the best way to use this package is with the devtools and testthat packages and running test("FLasherTests").
+    This will run all the tests in the package and tell where things break. Alternatively you can run R CMD check but this takes longer and gives fewer details.
 }
 \details{
-  This section should provide a more detailed overview of how to use the
-  package, including the most important functions.
+    Ghost Reveries is excellent but I prefer Blackwater Park.
 }
 \author{
-Your Name, email optional.
+Finlay Scott
 
-Maintainer: Your Name <your@email.com>
-}
-\references{
-  This optional section can contain literature or other references for
-  background information.
+Maintainer: Finlay Scott<finlay.scott@ec.europa.eu>
 }
 \keyword{ package }
-\seealso{
-  Optional links to other man pages
-}
 \examples{
   \dontrun{
-     ## Optional simple examples of the most important functions
-     ## These can be in \dontrun{} and \donttest{} blocks.   
+      library(devtools)
+      library(testthat)
+      load_all("FLasherTests")
+      test("FLasherTests")
   }
 }
