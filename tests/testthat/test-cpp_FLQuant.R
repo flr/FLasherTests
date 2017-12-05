@@ -222,15 +222,54 @@ test_that("FLQuant match_dims method works", {
 test_that("FLQuant subsetter works",{
     fixed_dims <- round(runif(6, min=5, max = 10))
     flq <- random_FLQuant_generator(fixed_dims = fixed_dims)
-    sub_dims_start <- round(runif(6, min=1, max = 2))
-    sub_dims_end <- fixed_dims - round(runif(6, min=1, max = 2))
+    sub_dims_start <- round(runif(6, min=1, max = fixed_dims))
+    sub_dims_end <- round(runif(6, min=sub_dims_start, max = fixed_dims))
     sub_flq_out <-  test_FLQuant_subset(flq, sub_dims_start[1], sub_dims_end[1], sub_dims_start[2], sub_dims_end[2], sub_dims_start[3], sub_dims_end[3], sub_dims_start[4], sub_dims_end[4], sub_dims_start[5], sub_dims_end[5], sub_dims_start[6], sub_dims_end[6])
     sub_flq_in <- flq[sub_dims_start[1]:sub_dims_end[1], sub_dims_start[2]:sub_dims_end[2], sub_dims_start[3]:sub_dims_end[3], sub_dims_start[4]:sub_dims_end[4], sub_dims_start[5]:sub_dims_end[5], sub_dims_start[6]:sub_dims_end[6]]
-    expect_identical(c(sub_flq_in@.Data), c(sub_flq_out@.Data))
-    expect_identical(sub_flq_in@.Data, sub_flq_out@.Data)
-    # min < max check
+    expect_FLQuant_equal(sub_flq_in, sub_flq_out)
+    # min < 1
+    sub_dims_wrong <- sub_dims_start
+    wrong_dim <- round(runif(1, min=1, max=6))
+    sub_dims_wrong[wrong_dim] <- round(runif(1,min=-10, max=0)) 
+    expect_error(test_FLQuant_subset(flq, sub_dims_wrong[1], sub_dims_end[1], sub_dims_wrong[2], sub_dims_end[2], sub_dims_wrong[3], sub_dims_end[3], sub_dims_wrong[4], sub_dims_end[4], sub_dims_wrong[5], sub_dims_end[5], sub_dims_wrong[6], sub_dims_end[6]))
+    # max > maxdim - except iters
     sub_dims_wrong <- sub_dims_end
-    expect_error(test_FLQuant_subset(flq, sub_dims_wrong[1], sub_dims_start[1], sub_dims_wrong[2], sub_dims_start[2], sub_dims_wrong[3], sub_dims_start[3], sub_dims_wrong[4], sub_dims_start[4], sub_dims_wrong[5], sub_dims_start[5], sub_dims_wrong[6], sub_dims_start[6]))
+    wrong_dim <- round(runif(1, min=1, max=5))
+    sub_dims_wrong[wrong_dim] <- sub_dims_start[wrong_dim] - 1
+    expect_error(test_FLQuant_subset(flq, sub_dims_start[1], sub_dims_wrong[1], sub_dims_start[2], sub_dims_wrong[2], sub_dims_start[3], sub_dims_wrong[3], sub_dims_start[4], sub_dims_wrong[4], sub_dims_start[5], sub_dims_wrong[5], sub_dims_start[6], sub_dims_wrong[6]))
+    # max >= min check
+    sub_dims_start <- round(runif(6, min=2, max = fixed_dims))
+    sub_dims_end <- round(runif(6, min=sub_dims_start, max = fixed_dims))
+    wrong_dim <- round(runif(1, min=1, max=6))
+    sub_dims_end[wrong_dim] <- sub_dims_start[wrong_dim] - 1
+    expect_error(test_FLQuant_subset(flq, sub_dims_start[1], sub_dims_end[1], sub_dims_start[2], sub_dims_end[2], sub_dims_start[3], sub_dims_end[3], sub_dims_start[4], sub_dims_end[4], sub_dims_start[5], sub_dims_end[5], sub_dims_start[6], sub_dims_end[6]))
+    #***** iters 1 or N ******
+    sub_dims_start <- round(runif(6, min=1, max = fixed_dims))
+    sub_dims_end <- round(runif(6, min=sub_dims_start, max = fixed_dims))
+    # Niters = N, Asking for x:(>N) - Fail
+    sub_dims_end[6] <- round(runif(1,min=fixed_dims[6], fixed_dims[6] * 2))
+    expect_error(test_FLQuant_subset(flq, sub_dims_start[1], sub_dims_end[1], sub_dims_start[2], sub_dims_end[2], sub_dims_start[3], sub_dims_end[3], sub_dims_start[4], sub_dims_end[4], sub_dims_start[5], sub_dims_end[5], sub_dims_start[6], sub_dims_end[6]))
+    sub_dims_start[6] <- 1
+    expect_error(test_FLQuant_subset(flq, sub_dims_start[1], sub_dims_end[1], sub_dims_start[2], sub_dims_end[2], sub_dims_start[3], sub_dims_end[3], sub_dims_start[4], sub_dims_end[4], sub_dims_start[5], sub_dims_end[5], sub_dims_start[6], sub_dims_end[6]))
+    iter_fixed_dims <- fixed_dims
+    iter_fixed_dims[6] <- 1
+    flq <- random_FLQuant_generator(fixed_dims = iter_fixed_dims)
+    # Niters = 1, Asking for 1:1 - OK
+    sub_dims_start <- round(runif(6, min=1, max = iter_fixed_dims))
+    sub_dims_end <- round(runif(6, min=sub_dims_start, max = iter_fixed_dims))
+    sub_flq_out <-  test_FLQuant_subset(flq, sub_dims_start[1], sub_dims_end[1], sub_dims_start[2], sub_dims_end[2], sub_dims_start[3], sub_dims_end[3], sub_dims_start[4], sub_dims_end[4], sub_dims_start[5], sub_dims_end[5], sub_dims_start[6], sub_dims_end[6])
+    sub_flq_in <- flq[sub_dims_start[1]:sub_dims_end[1], sub_dims_start[2]:sub_dims_end[2], sub_dims_start[3]:sub_dims_end[3], sub_dims_start[4]:sub_dims_end[4], sub_dims_start[5]:sub_dims_end[5], sub_dims_start[6]:sub_dims_end[6]]
+    expect_FLQuant_equal(sub_flq_in, sub_flq_out)
+    # Niters = 1, Asking for 1:10 - OK, returns 1:1
+    sub_dims_end[6] <- round(runif(1, min=5, max=10))
+    sub_flq_out <-  test_FLQuant_subset(flq, sub_dims_start[1], sub_dims_end[1], sub_dims_start[2], sub_dims_end[2], sub_dims_start[3], sub_dims_end[3], sub_dims_start[4], sub_dims_end[4], sub_dims_start[5], sub_dims_end[5], sub_dims_start[6], sub_dims_end[6])
+    expect_FLQuant_equal(sub_flq_in, sub_flq_out)
+    # Niters = 1, Asking for 5:10 - Should fail
+    sub_dims_start[6] <- round(runif(1, min=2, max=sub_dims_end[6]))
+    expect_error(test_FLQuant_subset(flq, sub_dims_start[1], sub_dims_end[1], sub_dims_start[2], sub_dims_end[2], sub_dims_start[3], sub_dims_end[3], sub_dims_start[4], sub_dims_end[4], sub_dims_start[5], sub_dims_end[5], sub_dims_start[6], sub_dims_end[6]))
+})
+
+test_that("FLQuant vector subsetter works",{
     # Test std::vector<unsigned int> subsetter
     flq <- random_FLQuant_generator()
     dims_max <- dim(flq)
@@ -242,6 +281,7 @@ test_that("FLQuant subsetter works",{
     expect_error(test_FLQuant_neat_subset(flq, dims_min, dims_max[-1]))
     expect_error(test_FLQuant_neat_subset(flq, c(1,dims_min), dims_max))
     expect_error(test_FLQuant_neat_subset(flq, dims_min, c(1,dims_max)))
+
 })
 
 test_that("Accessing FLQuant iter = 1 or n works",{

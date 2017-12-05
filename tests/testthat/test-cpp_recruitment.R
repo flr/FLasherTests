@@ -313,7 +313,7 @@ test_that("operatingModel calc_rec seasonal OM - 1 recruitment event", {
     for (recruitment_season in 1:nseasons){
         # Seasonal model
         for (recruitment_age in 0:3){ # recruitment age 0 is special case
-            om <- make_test_operatingModel(ple4, FCB, nseasons = 4, recruitment_seasons = recruitment_season, recruitment_age = recruitment_age, niters = niters, sd = 0.1)
+            om <- make_test_operatingModel(ple4, FCB, nseasons = nseasons, recruitment_seasons = recruitment_season, recruitment_age = recruitment_age, niters = niters, sd = 0.1)
             pars <- om[["biols"]][[1]][["biol"]]@srparams
             res <- om[["biols"]][[1]][["srr_residuals"]]
             rec_year <- round(runif(1, min=5, max=10))
@@ -333,6 +333,9 @@ test_that("operatingModel calc_rec seasonal OM - 1 recruitment event", {
                 srp <- test_operatingModel_total_SRP_FLQ_subset(om[["fisheries"]], om[["biols"]], om[["fwc"]], 1, c(srp_year,1,srp_season,1,1), c(srp_year,1,srp_season,1,niters))
                 rec_in <- pars[1,,,season] * srp / (pars[2,,,season] + srp) # bevholt
                 rec_in <- rec_in * res[,rec_year,,season]
+                # replace NAs with 0s - not allowed a recruitment of NA in the OM
+                # eval_model checks for NAs, then sets rec to 0.0
+                rec_in[is.na(rec_in)] <- 0.0
                 rec_out <- test_operatingModel_calc_rec(om[["fisheries"]], om[["biols"]], om[["fwc"]], 1, 1, ((rec_year-1) * 4)+season)
                 expect_equal(c(rec_in), rec_out)
             }
@@ -370,6 +373,8 @@ test_that("operatingModel calc_rec seasonal OM - multiple recruitment event", {
             for (unit in 1:length(recruitment_seasons)){
                 rec_in <- pars[1,,unit,season] * srp / (pars[2,,unit,season] + srp) # bevholt
                 rec_in <- rec_in * res[,rec_year,unit,season]
+                # eval_model checks for NAs, then sets rec to 0.0
+                rec_in[is.na(rec_in)] <- 0.0
                 rec_out <- test_operatingModel_calc_rec(om[["fisheries"]], om[["biols"]], om[["fwc"]], 1, unit, ((rec_year-1) * nseasons)+season)
                 expect_equal(c(rec_in), rec_out)
             }
