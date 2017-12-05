@@ -1040,6 +1040,67 @@ test_that("get_target_value_hat absolute", {
     expect_equal(val_hat, c(val_in1, val_in2))
 })
 
+test_that("get_target_value_hat joint FC targets", {
+    niters <- round(runif(1,min=1,max=10))
+    # Two fisheries, each with two catches, fishing on two biols
+    fcb <- matrix(c(1,1,1,1,2,2,2,1,1,2,2,2), byrow=TRUE, ncol=3, dimnames=list(1:4,c("F","C","B")))
+    om <- make_test_operatingModel(ple4, FCB, nseasons = 1, recruitment_age = 1, niters = niters, sd = 0.1)
+    flfs <- om[["fisheries"]]
+    flbs <- om[["biols"]]
+    years <- sort(round(runif(5, min=1,max=dims[2])))
+    rel_sol_catch <- 0.8
+    ple_f <- 0.15 # set sum of partial Fs
+    # Total F target on plaice, relative catch on sole catches
+    ctrl <- fwdControl(
+        list(year=years, quant="f", minAge=2, maxAge=6, value=ple_f, fishery=G(1,2), catch=G(1, 1), biol=1, season=1), # need to specify biol too, bit awkward
+        list(year=years, quant="catch", value = 0.8, fishery=1, catch=2, relYear=years, relFishery=2, relCatch=2, season=1, relSeason=1),
+        FCB=fcb)
+    ctrl@target$fishery <- as.list(ctrl@target$fishery)
+    ctrl@target$catch <- as.list(ctrl@target$catch)
+    ctrl@target$biol <- as.list(ctrl@target$biol)
+    ctrl@target$relFishery <- as.list(ctrl@target$relFishery)
+    ctrl@target$relCatch <- as.list(ctrl@target$relCatch)
+    ctrl@target$relBiol <- as.list(ctrl@target$relBiol)
+    ctrl@target$order <- rep(1:length(years), each=2)
+    trgno <- round(runif(1, min=1,max=length(years)))
+    # sim target 1 - should be sum of partial Fs on plaice from the two catches
+    val_hat1 <- test_operatingModel_get_target_value_hat(flfs, flbs, ctrl, trgno, 1)
+    pf1 <- FLasher:::calc_F(flfs[[1]][[1]], flbs[[1]][["biol"]], flfs[[1]]@effort)
+    pf2 <- FLasher:::calc_F(flfs[[2]][[1]], flbs[[1]][["biol"]], flfs[[2]]@effort)
+    fp <- c(apply((pf1+pf2)[2:6,],2:6,mean)[,years[trgno]])
+    expect_equal(fp,c(val_hat1))
+    # sim target 2
+    val_hat1 <- test_operatingModel_get_target_value_hat(flfs, flbs, ctrl, trgno, 2)
+    c1 <- catch(flfs[[1]][[2]])
+    c2 <- catch(flfs[[2]][[2]])
+    expect_equal(c((c1/c2)[,years[trgno]]), val_hat1)
+})
+
+test_that("get_target_value_hat joint B targets", {
+    niters <- round(runif(1,min=1,max=10))
+    # Two fisheries, each with two catches, fishing on two biols
+    fcb <- matrix(c(1,1,1,1,2,2,2,1,1,2,2,2), byrow=TRUE, ncol=3, dimnames=list(1:4,c("F","C","B")))
+    om <- make_test_operatingModel(ple4, FCB, nseasons = 1, recruitment_age = 1, niters = niters, sd = 0.1)
+    flfs <- om[["fisheries"]]
+    flbs <- om[["biols"]]
+    joint_tac <- 10000
+    years <- sort(round(runif(5, min=1,max=dims[2])))
+    ctrl <- fwdControl(
+        list(year=years, quant="catch", value=joint_tac, fishery=G(1,2), catch=G(1, 1), season=1),
+    FCB=fcb)
+    ctrl@target$fishery <- as.list(ctrl@target$fishery)
+    ctrl@target$catch <- as.list(ctrl@target$catch)
+    ctrl@target$biol <- as.list(ctrl@target$biol)
+    ctrl@target$relFishery <- as.list(ctrl@target$relFishery)
+    ctrl@target$relCatch <- as.list(ctrl@target$relCatch)
+    ctrl@target$relBiol <- as.list(ctrl@target$relBiol)
+    ctrl@target$order <- 1:length(years)
+    trgno <- round(runif(1, min=1,max=length(years)))
+    val_hat1 <- test_operatingModel_get_target_value_hat(flfs, flbs, ctrl, trgno, 1)
+    c1 <- catch(flfs[[1]][[1]])
+    c2 <- catch(flfs[[2]][[1]])
+    expect_equal(c((c1+c2)[,years[trgno]]), val_hat1)
+})
 
 test_that("get_target_value_hat for relative targets", {
     # Two fisheries, two biols, with units
