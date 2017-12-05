@@ -79,19 +79,19 @@ test_that("fwdControl accessors", {
     fc@target$relSeason <- 1:(1+length(fc@target$relSeason)-1)
     expect_equal(fc@target$relSeason[target_rows], test_fwdControl_get_target_int_col(fc, target_no, "relSeason"))
     # fishery, catch, biol - just pull out 1 value - Need to force to be int in case it's an NA - throws warnings - bit annoying
-    expect_equal(fc@target$fishery[row_no], test_fwdControl_get_target_int_col2(fc, target_no, sim_target_no, "fishery"))
-    expect_equal(fc@target$catch[row_no], test_fwdControl_get_target_int_col2(fc, target_no, sim_target_no, "catch")) 
+    #expect_equal(fc@target$fishery[row_no], test_fwdControl_get_target_int_col2(fc, target_no, sim_target_no, "fishery"))
+    #expect_equal(fc@target$catch[row_no], test_fwdControl_get_target_int_col2(fc, target_no, sim_target_no, "catch")) 
     # For biol - use list int
     #expect_equal(fc@target$biol[row_no] ,test_fwdControl_get_target_int_col2(fc, target_no, sim_target_no, "biol"))
 
     # Do these work with NA?
-    fc@target$fishery[1] <- as.integer(NA)
-    if (any(is.na(fc@target$fishery))){
-        na_row <- which(is.na(fc@target$fishery))[1]
-        na_target_no <- fc@target$order[na_row]
-        na_sim_target_no <- which(which(fc@target$order == na_target_no) == na_row)
-        expect_true(is.na(as.integer(test_fwdControl_get_target_int_col2(fc, na_target_no, na_sim_target_no, "fishery"))))
-    }
+    #fc@target$fishery[1] <- as.integer(NA)
+    #if (any(is.na(fc@target$fishery))){
+    #    na_row <- which(is.na(fc@target$fishery))[1]
+    #    na_target_no <- fc@target$order[na_row]
+    #    na_sim_target_no <- which(which(fc@target$order == na_target_no) == na_row)
+    #    expect_true(is.na(as.integer(test_fwdControl_get_target_int_col2(fc, na_target_no, na_sim_target_no, "fishery"))))
+    #}
     # get target type / quantity
     type <- test_fwdControl_get_target_quantity(fc, target_no, sim_target_no)
     expect_identical(type, as.character(fc@target[target_rows[sim_target_no], "quant"]))

@@ -282,7 +282,6 @@ test_that("operatingModel fbar methods",{
     indices_max <- c(max_age, year, dim[3], season, 1, dim[6])
     indices_min_u1 <- c(min_age, year, unit, season, 1, 1)
     indices_max_u1 <- c(max_age, year, unit, season, 1, dim[6])
-
     # Single units
     # Just biols
     for (biol in 1:4){
@@ -985,6 +984,13 @@ test_that("get_target_value_hat absolute", {
                         fishery = c(NA,1), catch = c(NA,2), biol = c(1,NA))
     trg_df <- rbind(trgt1, trgt2)
     fwc <- fwdControl(trg_df)
+    # Make lists - automatically done in fwd
+    fwc@target$fishery <- as.list(fwc@target$fishery)
+    fwc@target$catch <- as.list(fwc@target$catch)
+    fwc@target$biol <- as.list(fwc@target$biol)
+    fwc@target$relFishery <- as.list(fwc@target$relFishery)
+    fwc@target$relCatch <- as.list(fwc@target$relCatch)
+    fwc@target$relBiol <- as.list(fwc@target$relBiol)
     # Need to add order column back in (done automatically in fwd)
     fwc@target$order <- c(1,1,2,2)
     fwc@FCB <- FCB
@@ -1021,6 +1027,12 @@ test_that("get_target_value_hat absolute", {
                         fishery = c(NA,1), catch = c(NA,2), biol = c(1,1),
                         minAge = min_age, maxAge = max_age)
     fwc <- fwdControl(f_trgt1)
+    fwc@target$fishery <- as.list(fwc@target$fishery)
+    fwc@target$catch <- as.list(fwc@target$catch)
+    fwc@target$biol <- as.list(fwc@target$biol)
+    fwc@target$relFishery <- as.list(fwc@target$relFishery)
+    fwc@target$relCatch <- as.list(fwc@target$relCatch)
+    fwc@target$relBiol <- as.list(fwc@target$relBiol)
     # Fix order (done in fwd)
     fwc@target$order <- 1
     fwc@FCB <- FCB
@@ -1041,12 +1053,14 @@ test_that("get_target_value_hat absolute", {
 })
 
 test_that("get_target_value_hat joint FC targets", {
+    data(ple4)
     niters <- round(runif(1,min=1,max=10))
     # Two fisheries, each with two catches, fishing on two biols
     fcb <- matrix(c(1,1,1,1,2,2,2,1,1,2,2,2), byrow=TRUE, ncol=3, dimnames=list(1:4,c("F","C","B")))
-    om <- make_test_operatingModel(ple4, FCB, nseasons = 1, recruitment_age = 1, niters = niters, sd = 0.1)
+    om <- make_test_operatingModel(ple4, fcb, nseasons = 1, recruitment_age = 1, niters = niters, sd = 0.1)
     flfs <- om[["fisheries"]]
     flbs <- om[["biols"]]
+    dims <- dim(n(flbs[[1]][["biol"]]))
     years <- sort(round(runif(5, min=1,max=dims[2])))
     rel_sol_catch <- 0.8
     ple_f <- 0.15 # set sum of partial Fs
@@ -1077,12 +1091,14 @@ test_that("get_target_value_hat joint FC targets", {
 })
 
 test_that("get_target_value_hat joint B targets", {
+    data(ple4)
     niters <- round(runif(1,min=1,max=10))
     # Two fisheries, each with two catches, fishing on two biols
     fcb <- matrix(c(1,1,1,1,2,2,2,1,1,2,2,2), byrow=TRUE, ncol=3, dimnames=list(1:4,c("F","C","B")))
-    om <- make_test_operatingModel(ple4, FCB, nseasons = 1, recruitment_age = 1, niters = niters, sd = 0.1)
+    om <- make_test_operatingModel(ple4, fcb, nseasons = 1, recruitment_age = 1, niters = niters, sd = 0.1)
     flfs <- om[["fisheries"]]
     flbs <- om[["biols"]]
+    dims <- dim(n(flbs[[1]][["biol"]]))
     joint_tac <- 10000
     years <- sort(round(runif(5, min=1,max=dims[2])))
     ctrl <- fwdControl(
@@ -1132,6 +1148,12 @@ test_that("get_target_value_hat for relative targets", {
                         relYear = rel_years[3:4], relSeason = rel_seasons[3:4])
     trg_df <- rbind(rel_trgt1, rel_trgt2)
     fwc <- fwdControl(trg_df)
+    fwc@target$fishery <- as.list(fwc@target$fishery)
+    fwc@target$catch <- as.list(fwc@target$catch)
+    fwc@target$biol <- as.list(fwc@target$biol)
+    fwc@target$relFishery <- as.list(fwc@target$relFishery)
+    fwc@target$relCatch <- as.list(fwc@target$relCatch)
+    fwc@target$relBiol <- as.list(fwc@target$relBiol)
     # Need to add order column back in (done automatically in fwd)
     fwc@target$order <- c(1,1,2,2)
     fwc@FCB <- FCB
@@ -1164,6 +1186,12 @@ test_that("get_target_value_hat for relative targets", {
                         relFishery = c(NA,1,1,1,NA), relCatch = c(1,NA,1,1,NA), relBiol = c(NA,NA,NA,NA,NA),
                         relYear = c(1,1,NA,1,1), relSeason = c(1,1,1,NA,1))
     fwc <- fwdControl(rel_trgt3)
+    fwc@target$fishery <- as.list(fwc@target$fishery)
+    fwc@target$catch <- as.list(fwc@target$catch)
+    fwc@target$biol <- as.list(fwc@target$biol)
+    fwc@target$relFishery <- as.list(fwc@target$relFishery)
+    fwc@target$relCatch <- as.list(fwc@target$relCatch)
+    fwc@target$relBiol <- as.list(fwc@target$relBiol)
     fwc@target$order <- 1:5
     fwc@FCB <- FCB
     expect_error(test_operatingModel_get_target_value_hat2(flfs, flbs, fwc, 1))
@@ -1196,6 +1224,12 @@ test_that("get_target_value - straight value", {
                         quant = c("landings","discards"), value = value[3:4],
                         fishery = c(NA,1), catch = c(NA,2), biol = c(1,NA))
     fwc <- fwdControl(rbind(trgt1,trgt2))
+    fwc@target$fishery <- as.list(fwc@target$fishery)
+    fwc@target$catch <- as.list(fwc@target$catch)
+    fwc@target$biol <- as.list(fwc@target$biol)
+    fwc@target$relFishery <- as.list(fwc@target$relFishery)
+    fwc@target$relCatch <- as.list(fwc@target$relCatch)
+    fwc@target$relBiol <- as.list(fwc@target$relBiol)
     fwc@target$order <- c(1,1,2,2) 
     fwc@FCB <- FCB
     # No iters in control - but iters in OM
@@ -1217,6 +1251,12 @@ test_that("get_target_value - straight value", {
     expect_equal(val_hat, c(val_in1, val_in2))
     # Same number of iters in iters and OM
     fwc <- fwdControl(rbind(trgt1, trgt2), niters)
+    fwc@target$fishery <- as.list(fwc@target$fishery)
+    fwc@target$catch <- as.list(fwc@target$catch)
+    fwc@target$biol <- as.list(fwc@target$biol)
+    fwc@target$relFishery <- as.list(fwc@target$relFishery)
+    fwc@target$relCatch <- as.list(fwc@target$relCatch)
+    fwc@target$relBiol <- as.list(fwc@target$relBiol)
     fwc@target$order <- c(1,1,2,2)
     fwc@iters[,"value",] <- abs(rnorm(4*niters))
     fwc@FCB <- FCB
@@ -1238,6 +1278,12 @@ test_that("get_target_value - straight value", {
     expect_equal(val_hat, unname(c(val_in1, val_in2)))
     # Too few iters in control - should fail
     fwc <- fwdControl(rbind(trgt1, trgt2), iters=niters-1)
+    fwc@target$fishery <- as.list(fwc@target$fishery)
+    fwc@target$catch <- as.list(fwc@target$catch)
+    fwc@target$biol <- as.list(fwc@target$biol)
+    fwc@target$relFishery <- as.list(fwc@target$relFishery)
+    fwc@target$relCatch <- as.list(fwc@target$relCatch)
+    fwc@target$relBiol <- as.list(fwc@target$relBiol)
     fwc@target$order <- c(1,1,2,2)
     fwc@iters[,"value",] <- abs(rnorm(4*(niters-1)))
     fwc@FCB <- FCB
@@ -1248,6 +1294,12 @@ test_that("get_target_value - straight value", {
     flfs <- om[["fisheries"]]
     flbs <- om[["biols"]]
     fwc <- fwdControl(rbind(trgt1, trgt2), niters)
+    fwc@target$fishery <- as.list(fwc@target$fishery)
+    fwc@target$catch <- as.list(fwc@target$catch)
+    fwc@target$biol <- as.list(fwc@target$biol)
+    fwc@target$relFishery <- as.list(fwc@target$relFishery)
+    fwc@target$relCatch <- as.list(fwc@target$relCatch)
+    fwc@target$relBiol <- as.list(fwc@target$relBiol)
     fwc@target$order <- c(1,1,2,2)
     fwc@iters[,"value",] <- abs(rnorm(4*niters))
     fwc@FCB <- FCB
@@ -1287,6 +1339,12 @@ test_that("get_target_value - min / max values", {
                         quant = c("catch","catch"),
                         fishery = c(1,NA), catch = c(1,NA), biol = c(NA,2))
     fwc <- fwdControl(trgt1, niters)
+    fwc@target$fishery <- as.list(fwc@target$fishery)
+    fwc@target$catch <- as.list(fwc@target$catch)
+    fwc@target$biol <- as.list(fwc@target$biol)
+    fwc@target$relFishery <- as.list(fwc@target$relFishery)
+    fwc@target$relCatch <- as.list(fwc@target$relCatch)
+    fwc@target$relBiol <- as.list(fwc@target$relBiol)
     fwc@target$order <- 1
     fwc@iters[1,"max",] <- ctrl_catch1
     fwc@iters[2,"max",] <- ctrl_catch2
@@ -1304,6 +1362,12 @@ test_that("get_target_value - min / max values", {
     # Max only - iters in OM, only 1 in control
     # Set max target so half of them are maxed out
     fwc <- fwdControl(trgt1, 1)
+    fwc@target$fishery <- as.list(fwc@target$fishery)
+    fwc@target$catch <- as.list(fwc@target$catch)
+    fwc@target$biol <- as.list(fwc@target$biol)
+    fwc@target$relFishery <- as.list(fwc@target$relFishery)
+    fwc@target$relCatch <- as.list(fwc@target$relCatch)
+    fwc@target$relBiol <- as.list(fwc@target$relBiol)
     fwc@target$order <- 1
     max1 <- median(catch1)
     max2 <- median(catch2)
@@ -1326,6 +1390,12 @@ test_that("get_target_value - min / max values", {
                         quant = c("catch","catch"),
                         fishery = c(1,NA), catch = c(1,NA), biol = c(NA,2))
     fwc <- fwdControl(trgt1, niters)
+    fwc@target$fishery <- as.list(fwc@target$fishery)
+    fwc@target$catch <- as.list(fwc@target$catch)
+    fwc@target$biol <- as.list(fwc@target$biol)
+    fwc@target$relFishery <- as.list(fwc@target$relFishery)
+    fwc@target$relCatch <- as.list(fwc@target$relCatch)
+    fwc@target$relBiol <- as.list(fwc@target$relBiol)
     fwc@target$order <- 1
     fwc@iters[1,"min",] <- ctrl_catch1
     fwc@iters[2,"min",] <- ctrl_catch2
@@ -1343,6 +1413,12 @@ test_that("get_target_value - min / max values", {
 
     # Min only - iters in OM, only 1 in control
     fwc <- fwdControl(trgt1, 1)
+    fwc@target$fishery <- as.list(fwc@target$fishery)
+    fwc@target$catch <- as.list(fwc@target$catch)
+    fwc@target$biol <- as.list(fwc@target$biol)
+    fwc@target$relFishery <- as.list(fwc@target$relFishery)
+    fwc@target$relCatch <- as.list(fwc@target$relCatch)
+    fwc@target$relBiol <- as.list(fwc@target$relBiol)
     fwc@target$order <- 1
     min1 <- median(catch1)
     min2 <- median(catch2)
@@ -1386,6 +1462,12 @@ test_that("get_target_value - min / max values", {
                         quant = c("catch","catch"),
                         fishery = c(1,NA), catch = c(1,NA), biol = c(NA,2))
     fwc <- fwdControl(trgt1, niters)
+    fwc@target$fishery <- as.list(fwc@target$fishery)
+    fwc@target$catch <- as.list(fwc@target$catch)
+    fwc@target$biol <- as.list(fwc@target$biol)
+    fwc@target$relFishery <- as.list(fwc@target$relFishery)
+    fwc@target$relCatch <- as.list(fwc@target$relCatch)
+    fwc@target$relBiol <- as.list(fwc@target$relBiol)
     fwc@target$order <- 1
     fwc@iters[1,"max",] <- max_catch1
     fwc@iters[1,"min",] <- min_catch1
@@ -1419,6 +1501,12 @@ test_that("get_target_value - min / max values", {
                         quant = c("catch","catch"),
                         fishery = c(1,NA), catch = c(1,NA), biol = c(NA,2))
     fwc <- fwdControl(trgt1, 1)
+    fwc@target$fishery <- as.list(fwc@target$fishery)
+    fwc@target$catch <- as.list(fwc@target$catch)
+    fwc@target$biol <- as.list(fwc@target$biol)
+    fwc@target$relFishery <- as.list(fwc@target$relFishery)
+    fwc@target$relCatch <- as.list(fwc@target$relCatch)
+    fwc@target$relBiol <- as.list(fwc@target$relBiol)
     fwc@target$order <- 1
     fwc@iters[1,"max",] <- max1
     fwc@iters[1,"min",] <- min1
@@ -1462,20 +1550,26 @@ test_that("operatingModel get_target_hat_indices absolute targets", {
                         fishery = c(NA,1, 1), catch = c(NA,1,1), biol = c(1,NA,NA),
                         minAge = c(min_age, NA,NA), maxAge = c(max_age, NA, max_age))
     fwc <- fwdControl(trgt)
+    fwc@target$fishery <- as.list(fwc@target$fishery)
+    fwc@target$catch <- as.list(fwc@target$catch)
+    fwc@target$biol <- as.list(fwc@target$biol)
+    fwc@target$relFishery <- as.list(fwc@target$relFishery)
+    fwc@target$relCatch <- as.list(fwc@target$relCatch)
+    fwc@target$relBiol <- as.list(fwc@target$relBiol)
     fwc@target$order <- c(1,1,2)
     fwc@FCB <- FCB
     # Test 1 - age structure with F target
-    out <- test_operatingModel_get_target_hat_indices(flfs, flbs, fwc, 1, 1, 0, FALSE)
+    out <- test_operatingModel_get_target_hat_indices(flfs, flbs, fwc, 1, 1, 1, FALSE)
     indices_min <- c(min_age-rec_age+1,year,1,season1,1,1)
     indices_max <- c(max_age-rec_age+1,year,dims[3],season1,1,dims[6])
     expect_identical(c(indices_min,indices_max), c(out[["indices_min"]], out[["indices_max"]]))
     # Test 2 - no age structure
-    out <- test_operatingModel_get_target_hat_indices(flfs, flbs, fwc, 1, 2, 0, FALSE)
+    out <- test_operatingModel_get_target_hat_indices(flfs, flbs, fwc, 1, 2, 1, FALSE)
     indices_min <- c(year,1,season1,1,1)
     indices_max <- c(year,dims[3],season1,1,dims[6])
     expect_identical(c(indices_min,indices_max), c(out[["indices_min"]], out[["indices_max"]]))
     # Test 3 - error min age but no max age
-    expect_error(test_operatingModel_get_target_hat_indices(flfs, flbs, fwc, 2, 1, 0, FALSE))
+    expect_error(test_operatingModel_get_target_hat_indices(flfs, flbs, fwc, 2, 1, 1, FALSE))
 })
 
 test_that("operatingModel get_target_hat_indices relative targets", {
@@ -1507,17 +1601,23 @@ test_that("operatingModel get_target_hat_indices relative targets", {
                         relMinAge = c(min_age,NA), relMaxAge = c(max_age,NA) 
                         )
     fwc <- fwdControl(trgt)
+    fwc@target$fishery <- as.list(fwc@target$fishery)
+    fwc@target$catch <- as.list(fwc@target$catch)
+    fwc@target$biol <- as.list(fwc@target$biol)
+    fwc@target$relFishery <- as.list(fwc@target$relFishery)
+    fwc@target$relCatch <- as.list(fwc@target$relCatch)
+    fwc@target$relBiol <- as.list(fwc@target$relBiol)
     fwc@target$order <- c(1,2)
     fwc@FCB <- FCB
     # Target 1
     indices_min <- c(min_age-rec_age+1,year,1,season1,1,1)
     indices_max <- c(max_age-rec_age+1,year,dims[3],season1,1,dims[6])
-    out <- test_operatingModel_get_target_hat_indices(flfs, flbs, fwc, 1, 1, 0, TRUE)
+    out <- test_operatingModel_get_target_hat_indices(flfs, flbs, fwc, 1, 1, 1, TRUE)
     expect_identical(c(indices_min,indices_max), c(out[["indices_min"]], out[["indices_max"]]))
     # Will fail as  no year and seasons set, only relative year and season - relative flag not set correctly
-    expect_error(test_operatingModel_get_target_hat_indices(flfs, flbs, fwc, 1, 1, 0, FALSE))
+    expect_error(test_operatingModel_get_target_hat_indices(flfs, flbs, fwc, 1, 1, 1, FALSE))
     # Test 2 - no age structure
-    out <- test_operatingModel_get_target_hat_indices(flfs, flbs, fwc, 2, 1, 0, TRUE)
+    out <- test_operatingModel_get_target_hat_indices(flfs, flbs, fwc, 2, 1, 1, TRUE)
     indices_min <- c(year,1,season2,1,1)
     indices_max <- c(year,dims[3],season2,1,dims[6])
     expect_identical(c(indices_min,indices_max), c(out[["indices_min"]], out[["indices_max"]]))

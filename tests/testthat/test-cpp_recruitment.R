@@ -336,7 +336,14 @@ test_that("operatingModel calc_rec seasonal OM - 1 recruitment event", {
                 # replace NAs with 0s - not allowed a recruitment of NA in the OM
                 # eval_model checks for NAs, then sets rec to 0.0
                 rec_in[is.na(rec_in)] <- 0.0
-                rec_out <- test_operatingModel_calc_rec(om[["fisheries"]], om[["biols"]], om[["fwc"]], 1, 1, ((rec_year-1) * 4)+season)
+
+                # If params are NA, return 0 with a warning
+                if(all(is.na(c(om[["biols"]][[1]][["biol"]]@srparams[1,,,season])))){
+                    expect_warning(rec_out <- test_operatingModel_calc_rec(om[["fisheries"]], om[["biols"]], om[["fwc"]], 1, 1, ((rec_year-1) * 4)+season))
+                }
+                else {
+                    rec_out <- test_operatingModel_calc_rec(om[["fisheries"]], om[["biols"]], om[["fwc"]], 1, 1, ((rec_year-1) * 4)+season)
+                }
                 expect_equal(c(rec_in), rec_out)
             }
         }
@@ -375,7 +382,13 @@ test_that("operatingModel calc_rec seasonal OM - multiple recruitment event", {
                 rec_in <- rec_in * res[,rec_year,unit,season]
                 # eval_model checks for NAs, then sets rec to 0.0
                 rec_in[is.na(rec_in)] <- 0.0
-                rec_out <- test_operatingModel_calc_rec(om[["fisheries"]], om[["biols"]], om[["fwc"]], 1, unit, ((rec_year-1) * nseasons)+season)
+                # SR params is NA, expect 0 and a warning
+                if(all(is.na(c(om[["biols"]][[1]][["biol"]]@srparams[1,,unit,season])))){
+                    expect_warning(rec_out <- test_operatingModel_calc_rec(om[["fisheries"]], om[["biols"]], om[["fwc"]], 1, unit, ((rec_year-1) * nseasons)+season))
+                }
+                else{
+                    rec_out <- test_operatingModel_calc_rec(om[["fisheries"]], om[["biols"]], om[["fwc"]], 1, unit, ((rec_year-1) * nseasons)+season)
+                }
                 expect_equal(c(rec_in), rec_out)
             }
         }
